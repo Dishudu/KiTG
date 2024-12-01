@@ -3,6 +3,9 @@
 #include <queue>
 #include <climits> // Для INT_MAX
 #include <windows.h>
+#include <chrono>
+#include <cstdlib>
+#include <ctime>
 using namespace std;
 
 // Структура для хранения рёбер графа
@@ -55,19 +58,25 @@ vector<int> dijkstra(const vector<vector<Edge>>& graph, int start) {
 int main() {
     SetConsoleOutputCP(CP_UTF8); // Устанавливаем вывод в кодировке UTF-8
     // Пример использования
-    int n = 5; // Количество вершин
+    int n = 500; // Количество вершин
     vector<vector<Edge>> graph(n);
 
     // Добавление рёбер
-    addEdge(graph, 0, 1, 4);
-    addEdge(graph, 0, 2, 1);
-    addEdge(graph, 2, 1, 2);
-    addEdge(graph, 1, 3, 1);
-    addEdge(graph, 2, 3, 5);
-    addEdge(graph, 3, 4, 3);
+    srand(time(0));
+
+    int vertices = 500, edges = 4000;
+    for (int i = 0; i < edges; ++i) {
+        int from = rand() % vertices;
+        int to = rand() % vertices;
+        int weight = rand() % 50 + 1; // Вес от 1 до 50
+        addEdge(graph, from, to, weight);
+    }
 
     int start = 0; // Начальная вершина
+
+    auto start_time = chrono::high_resolution_clock::now(); //начало измерений
     vector<int> distances = dijkstra(graph, start);
+    auto end_time = chrono::high_resolution_clock::now(); //конец измерений
 
     // Вывод результатов
     cout << "Минимальные расстояния от вершины " << start << ":\n";
@@ -79,6 +88,10 @@ int main() {
             cout << distances[i] << "\n";
         }
     }
+
+    cout << "Время выполнения: " 
+        << chrono::duration_cast<chrono::microseconds>(end_time - start_time).count() 
+        << " мкс\n";
 
     return 0;
 }
