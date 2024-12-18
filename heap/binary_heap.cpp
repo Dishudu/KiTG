@@ -1,6 +1,8 @@
 #include <iostream>
 #include <vector>
-#include <stdexcept>
+#include <chrono> // Для замера времени
+#include <algorithm> // Для генерации случайных чисел
+#include <random> // Генератор случайных чисел
 
 // Класс для реализации максимальной кучи
 class Heap {
@@ -74,35 +76,45 @@ public:
     }
 };
 
-// Точка входа в программу
 int main() {
     Heap heap;
+    std::vector<int> testSizes = {100000, 1000000, 5000000, 10000000}; // Количество элементов для тестов
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_int_distribution<> dist(1, 1000000);
 
-    // Тест добавления элементов
-    std::cout << "Inserting elements into the heap:\n";
-    heap.insert(10);
-    heap.insert(20);
-    heap.insert(5);
-    heap.insert(30);
-    heap.insert(15);
+    for (int size : testSizes) {
+        std::vector<int> inputArray(size);
 
-    std::cout << "Heap after inserts: ";
-    heap.printHeap();
+        // Генерация случайных чисел
+        std::generate(inputArray.begin(), inputArray.end(), [&]() { return dist(gen); });
 
-    // Тест извлечения максимального элемента
-    std::cout << "\nExtracting max:\n";
-    std::cout << "Max: " << heap.extractMax() << std::endl;
+        // Тест: Построение кучи из массива
+        std::cout << "\nTest buildHeap with " << size << " elements:\n";
+        auto start = std::chrono::high_resolution_clock::now();
+        heap.buildHeap(inputArray);
+        auto end = std::chrono::high_resolution_clock::now();
+        std::cout << "Time taken: " << std::chrono::duration<double>(end - start).count() << " seconds\n";
 
-    std::cout << "Heap after extraction: ";
-    heap.printHeap();
+        // Тест: Вставка всех элементов по одному
+        std::cout << "Test insert with " << size << " elements:\n";
+        Heap heapForInsert;
+        start = std::chrono::high_resolution_clock::now();
+        for (int value : inputArray) {
+            heapForInsert.insert(value);
+        }
+        end = std::chrono::high_resolution_clock::now();
+        std::cout << "Time taken: " << std::chrono::duration<double>(end - start).count() << " seconds\n";
 
-    // Тест построения кучи из массива
-    std::cout << "\nBuilding heap from array:\n";
-    std::vector<int> inputArray = {3, 1, 6, 5, 2, 4};
-    heap.buildHeap(inputArray);
-
-    std::cout << "Heap after buildHeap: ";
-    heap.printHeap();
+        // Тест: Извлечение всех элементов
+        std::cout << "Test extractMax with " << size << " elements:\n";
+        start = std::chrono::high_resolution_clock::now();
+        for (int i = 0; i < size; ++i) {
+            heap.extractMax();
+        }
+        end = std::chrono::high_resolution_clock::now();
+        std::cout << "Time taken: " << std::chrono::duration<double>(end - start).count() << " seconds\n";
+    }
 
     return 0;
 }
